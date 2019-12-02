@@ -1,11 +1,10 @@
 package g53sqm.chat.server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import javax.swing.*;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Connection implements Runnable {
 	
@@ -17,53 +16,51 @@ public class Connection implements Runnable {
 	private int state;
 	private Socket client;
 	private Server serverReference;
-	private BufferedReader in;
-	private PrintWriter out;
 	private String username;
-	
-	Connection (Socket client, Server serverReference) {
+
+	//Scanner scn = new Scanner(System.in);
+	//private String name;
+	final DataInputStream dis;
+	final DataOutputStream dos;
+	boolean isloggedin;
+
+	public Connection(Socket client, Server serverReference,DataInputStream dis,DataOutputStream dos) {
 		this.serverReference = serverReference;
 		this.client = client;
 		this.state = STATE_UNREGISTERED;
 		messageCount = 0;
+		this.dis = dis;
+		this.dos = dos;
+		isloggedin = true;
 	}
-	@Override
+
 	public void run(){
 		String line;
-		try {
-			in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-			out = new PrintWriter(client.getOutputStream(), true);
-		} catch (IOException e) {
-			System.out.println("in or out failed");
-			System.exit(-1);
-		}
+
 		running = true;
-		System.out.println("Run " + client);
 		this.sendOverConnection("OK Welcome to the chat server, there are currelty " + serverReference.getNumberOfUsers() + " user(s) online");
-		try {
-			line = in.readLine();
-			System.out.println(line);
-			validateMessage(line);
-		} catch (IOException e) {
-			System.out.println("Read failed");
-			System.exit(-1);
-		}
-
-		/*while(running) {
-
+		while(running) {
 			try {
-				line = in.readLine();
-				System.out.println(line);
-				validateMessage(line);	
+				line = dis.readUTF();
+				validateMessage(line);
 			} catch (IOException e) {
 				System.out.println("Read failed");
 				System.exit(-1);
 			}
-		}*/
+		}
+		try
+		{
+			// closing resources
+			this.dis.close();
+			this.dos.close();
+
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
 	private void validateMessage(String message) {
-		System.out.println(message);
+		
 		if(message.length() < 4){
 			sendOverConnection ("BAD invalid command to server");
 		} else {
@@ -101,10 +98,10 @@ public class Connection implements Runnable {
 	}
 	
 	private void stat() {
-		String status = "There are currently "+serverReference.getNumberOfUsers()+" user(s) on the server ";
+		String status = "There are currently "+serverReference.getNumberOfUsers()+" user(s) on the server\n ";
 		switch(state) {
 			case STATE_REGISTERED:
-				status += "You are logged im and have sent " + messageCount + " message(s)";
+				status += "You are logged im and have sent " + messageCount + " message(s)\n";
 				break;
 			
 			case STATE_UNREGISTERED:
@@ -145,7 +142,8 @@ public class Connection implements Runnable {
 				} else {
 					this.username = username;
 					state = STATE_REGISTERED;
-					sendOverConnection("OK Welcome to the chat server " + username);			
+					sendOverConnection("OK Welcome to the chat server " + username);
+
 				}
 				break;
 		}	
@@ -198,6 +196,14 @@ public class Connection implements Runnable {
 		switch(state) {
 			case STATE_REGISTERED:
 				sendOverConnection("OK thank you for sending " + messageCount + " message(s) with the chat service, goodbye. ");
+
+				try {
+					this.isloggedin=false;
+					this.client.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
 				break;
 			case STATE_UNREGISTERED:
 				sendOverConnection("OK goodbye");
@@ -214,7 +220,7 @@ public class Connection implements Runnable {
 	}
 	
 	private synchronized void sendOverConnection (String message){
-		out.println(message);
+		System.out.println(message);
 	}
 	
 	public void messageForConnection (String message){

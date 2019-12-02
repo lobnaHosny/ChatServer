@@ -40,15 +40,17 @@ public class Client {
         // string to read message from input
         String line = "";
 
-        // keep reading until "Over" is input
-        while (!line.equals("Over"))
+        // keep reading until "QUIT" is input
+        while (!line.equals("QUIT"))
         {
             try
             {
 
                 if (input != null) {
                     line = input.readLine();
+
                 }
+
                 out.writeUTF(line);
             }
             catch(IOException i)
@@ -75,3 +77,4 @@ public class Client {
         Client client = new Client("127.0.0.1", 9000);
     }
 }
+

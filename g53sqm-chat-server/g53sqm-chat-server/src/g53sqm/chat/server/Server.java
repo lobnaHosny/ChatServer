@@ -1,5 +1,7 @@
 package g53sqm.chat.server;
 
+import g53sqm.chat.server.client.Client;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,49 +15,57 @@ import java.util.Iterator;
 public class Server {
 
 	private ServerSocket server;
-	private Socket socket;
-	private ArrayList<Connection> list;
-	Connection c = null;
+	private Socket socket   = null;
 	private DataInputStream in       =  null;
-	
+	private ArrayList<Connection> list = new ArrayList<Connection>();
+	Connection c;
+	String line = "";
+
 	public Server (int port) {
 		try {
 			server = new ServerSocket(port);
 			System.out.println("Server has been initialised on port " + port);
+			//list = new ArrayList<Connection>();
+
+				while (true){
+					socket = server.accept();
+					System.out.println("Client Accepted "+ socket);
+
+					try {
+						// obtain input and output streams
+						DataInputStream dis = new DataInputStream(socket.getInputStream());
+						DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+						c = new Connection(socket,this,dis,dos );
+						Thread t = new Thread(c);
+
+						t.start();
+						list.add(c);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+
+
+
+				}
+
+
+
+
+
+
+
+
 		}
 		catch (IOException e) {
 			System.err.println("error initialising server");
 			e.printStackTrace();
 		}
-		list = new ArrayList<Connection>();
-		while(true) {
-
-				try {
-					socket = server.accept();
-					c = new Connection(socket, this);
-					System.out.println("Client Accepted "+ socket);
-
-					in = new DataInputStream(
-							new BufferedInputStream(socket.getInputStream()));
-					String line = " ";
 
 
-
-					Thread t = new Thread(c);
-					t.start();
-					list.add(c);
-
-				}
-				catch (IOException e) {
-					System.err.println("error setting up new client conneciton");
-					e.printStackTrace();
-				}
-
-
-
-		}
 	}
-	
+
+
 	public ArrayList<String> getUserList() {
 		ArrayList<String> userList = new ArrayList<String>();
 		for( Connection clientThread: list){
