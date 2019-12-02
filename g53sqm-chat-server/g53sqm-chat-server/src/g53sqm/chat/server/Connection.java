@@ -27,7 +27,7 @@ public class Connection implements Runnable {
 		this.state = STATE_UNREGISTERED;
 		messageCount = 0;
 	}
-	
+	@Override
 	public void run(){
 		String line;
 		try {
@@ -38,20 +38,32 @@ public class Connection implements Runnable {
 			System.exit(-1);
 		}
 		running = true;
+		System.out.println("Run " + client);
 		this.sendOverConnection("OK Welcome to the chat server, there are currelty " + serverReference.getNumberOfUsers() + " user(s) online");
-		while(running) {
+		try {
+			line = in.readLine();
+			System.out.println(line);
+			validateMessage(line);
+		} catch (IOException e) {
+			System.out.println("Read failed");
+			System.exit(-1);
+		}
+
+		/*while(running) {
+
 			try {
 				line = in.readLine();
+				System.out.println(line);
 				validateMessage(line);	
 			} catch (IOException e) {
 				System.out.println("Read failed");
 				System.exit(-1);
 			}
-		}
+		}*/
 	}
 	
 	private void validateMessage(String message) {
-		
+		System.out.println(message);
 		if(message.length() < 4){
 			sendOverConnection ("BAD invalid command to server");
 		} else {

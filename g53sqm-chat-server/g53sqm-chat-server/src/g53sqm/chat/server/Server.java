@@ -1,5 +1,8 @@
 package g53sqm.chat.server;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,7 +13,10 @@ import java.util.Iterator;
 public class Server {
 
 	private ServerSocket server;
+	private Socket socket;
 	private ArrayList<Connection> list;
+	Connection c = null;
+	private DataInputStream in       =  null;
 	
 	public Server (int port) {
 		try {
@@ -23,31 +29,33 @@ public class Server {
 		}
 		list = new ArrayList<Connection>();
 		while(true) {
-				Connection c = null;
+
 				try {
-					c = new Connection(server.accept(), this);
+					socket = server.accept();
+					c = new Connection(socket, this);
+					System.out.println("Client Accepted "+ socket);
+
+					in = new DataInputStream(
+							new BufferedInputStream(socket.getInputStream()));
+					String line = " ";
+
+
+
+					Thread t = new Thread(c);
+					t.start();
+					list.add(c);
+
 				}
 				catch (IOException e) {
 					System.err.println("error setting up new client conneciton");
 					e.printStackTrace();
 				}
-				Thread t = new Thread(c);
-				t.start();
-				list.add(c);
-		}
-		
-		public static void acceptClients(){
-			while(true){
-				try{
-					Socket socket = serverSocket.accept();
-				}catch (IOException e){
-					System.out.println("Accept failed on:" +portNumber);
-				}
-			}
+
+
+
 		}
 	}
-
-
+	
 	public ArrayList<String> getUserList() {
 		ArrayList<String> userList = new ArrayList<String>();
 		for( Connection clientThread: list){
