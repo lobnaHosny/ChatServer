@@ -10,6 +10,7 @@ jar file in "jar files" folder can be run with "java -jar chatServer.jar"
 
 
 
+
 Chat server will run on port 9000, mutliple client connecitons can be made using
 
 a supported chat client applicaiton or telenet
@@ -29,3 +30,9 @@ MESG <username> <message>
 HAIL <broadbcast message> 
 
 QUIT
+
+
+
+
+To improve:
+Client recieve messages from other clients
