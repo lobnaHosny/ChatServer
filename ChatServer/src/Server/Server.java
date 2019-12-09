@@ -23,7 +23,6 @@ public class Server {
 		try {
 			server = new ServerSocket(port);
 			System.out.println("Server has been initialised on port " + port);
-			//list = new ArrayList<Connection>();
 
 				while (true){
 					socket = server.accept();
@@ -39,6 +38,7 @@ public class Server {
 						t.start();
 						list.add(c);
 					} catch (IOException e) {
+
 						e.printStackTrace();
 					}
 
@@ -55,9 +55,9 @@ public class Server {
 
 
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			System.err.println("error initialising server");
-			e.printStackTrace();
+
 		}
 
 

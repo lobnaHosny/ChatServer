@@ -15,7 +15,7 @@ public class Connection implements Runnable {
 	private int messageCount;
 	private int state;
 	private Socket client;
-	private Server serverReference;
+	public static Server serverReference;
 	private String username;
 
 	//Scanner scn = new Scanner(System.in);
@@ -24,6 +24,7 @@ public class Connection implements Runnable {
 	DataOutputStream dos;
 	boolean isloggedin;
 
+	
 	public Connection(Socket client, Server serverReference,DataInputStream dis,DataOutputStream dos) {
 		this.serverReference = serverReference;
 		this.client = client;
@@ -84,6 +85,9 @@ public class Connection implements Runnable {
 				case "MESG":
 					mesg(message.substring(5));
 					break;
+				case "NUMB":
+					sendOverConnection(String.valueOf(serverReference.getNumberOfUsers()));
+					break;
 				
 				case "QUIT":
 					quit();
@@ -98,7 +102,7 @@ public class Connection implements Runnable {
 	}
 	
 	private void stat() {
-		String status = "There are currently "+serverReference.getNumberOfUsers()+" user(s) on the server\n ";
+		String status = "There are currently "+serverReference.getNumberOfUsers()+" user(s) on the server\n";
 		switch(state) {
 			case STATE_REGISTERED:
 				status += "You are logged im and have sent " + messageCount + " message(s)\n";
@@ -117,9 +121,9 @@ public class Connection implements Runnable {
 				ArrayList<String> userList = serverReference.getUserList();
 				String userListString = new String();
 				for(String s: userList) {
-					userListString += s + ", ";
+					userListString += s + "\n";
 				}
-				sendOverConnection("OK " + userListString);
+				sendOverConnection(userListString);
 				break;
 			
 			case STATE_UNREGISTERED:
@@ -139,10 +143,12 @@ public class Connection implements Runnable {
 				String username = message.split(" ")[0];
 				if(serverReference.doesUserExist(username)) {
 					sendOverConnection("BAD username is already taken");
+
 				} else {
 					this.username = username;
 					state = STATE_REGISTERED;
 					sendOverConnection("OK Welcome to the chat server " + username);
+					serverReference.broadcastMessage("CONNNECTED "+ username);
 
 				}
 				break;
@@ -196,6 +202,8 @@ public class Connection implements Runnable {
 		switch(state) {
 			case STATE_REGISTERED:
 				sendOverConnection("OK thank you for sending " + messageCount + " message(s) with the chat service, goodbye. ");
+				serverReference.broadcastMessage("Number of online users: " + serverReference.getNumberOfUsers());
+				serverReference.broadcastMessage("DISCONNECTED "+ username);
 				break;
 			case STATE_UNREGISTERED:
 				sendOverConnection("OK goodbye");
@@ -234,6 +242,7 @@ public class Connection implements Runnable {
 	public String getUserName() {
 		return username;
 	}
+
 	
 }
 

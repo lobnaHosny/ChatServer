@@ -8,21 +8,25 @@ public class Client
 {
     private static DataOutputStream dos;
     private static DataInputStream dis;
-    //final static int ServerPort = 9000;
+    final static int ServerPort = 8080;
 
-    public static void main(String args[]) throws UnknownHostException, IOException
+    public static void main(String args[])
     {
         Scanner scn = new Scanner(System.in);
 
         // getting localhost ip
-        InetAddress ip = InetAddress.getByName("localhost");
+        try {
+            InetAddress ip = InetAddress.getByName("localhost");
+
 
         // establish the connection
-        Socket s = new Socket("127.0.0.1", 9000);
+        Socket s = new Socket("127.0.0.1", ServerPort);
+
 
         // obtaining input and out streams
         dis = new DataInputStream(s.getInputStream());
         dos = new DataOutputStream(s.getOutputStream());
+
 
         // sendMessage thread
         Thread sendMessage = new Thread(new Runnable()
@@ -75,7 +79,10 @@ public class Client
        sendMessage.start();
 
 
-
+        } catch (Exception e) {
+            System.err.println("wrong port");
+            //e.printStackTrace();
+        }
 
 
     }
