@@ -18,7 +18,9 @@ public class Server {
 	private ArrayList<Connection> list = new ArrayList<Connection>();
 	Connection c;
 	String line = "";
+	ArrayList<String> broadcastMsgList = new ArrayList<String>();
 
+	String bMsg;
 	public Server (int port) {
 		try {
 			server = new ServerSocket(port);
@@ -42,17 +44,7 @@ public class Server {
 						e.printStackTrace();
 					}
 
-
-
-
 				}
-
-
-
-
-
-
-
 
 		}
 		catch (Exception e) {
@@ -75,19 +67,32 @@ public class Server {
 	}
 	
 	public boolean doesUserExist(String newUser) {
-		boolean result = false;
+		//boolean result = false;
 		for( Connection clientThread: list){
 			if(clientThread.getState() == Connection.STATE_REGISTERED) {
-				result = clientThread.getUserName().compareTo(newUser)==0;
+				if(clientThread.getUserName().equals(newUser)){
+					return true;
+				}
 			}
 		}
-		return result;
+		return false;
 	}
-	
+
+
 	public void broadcastMessage(String theMessage){
-		System.out.println(theMessage);
+		//System.out.println(theMessage);
+		bMsg = new String();
+		broadcastMsgList.add(theMessage);
+		for(String msg : broadcastMsgList){
+			bMsg += msg + "\n";
+
+		}
+		System.out.println(bMsg);
 		for( Connection clientThread: list){
-			clientThread.messageForConnection(theMessage + System.lineSeparator());	
+			if(clientThread.getState() == Connection.STATE_REGISTERED){
+
+				clientThread.messageForConnection(bMsg + System.lineSeparator());
+			}
 		}
 	}
 	
@@ -113,9 +118,18 @@ public class Server {
 	}
 	
 	public int getNumberOfUsers() {
+		int counter = 0;
+		for( Connection clientThread: list){
+			if(clientThread.getState() == Connection.STATE_REGISTERED){
+				counter++;
+			}
+		}
+		return counter;
+	}
+
+	public int connectedNumberOfUsers(){
 		return list.size();
 	}
-	
 	protected void finalize() throws IOException{
 		server.close();
 	}

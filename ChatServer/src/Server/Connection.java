@@ -24,6 +24,7 @@ public class Connection implements Runnable {
 	DataOutputStream dos;
 	boolean isloggedin;
 
+
 	
 	public Connection(Socket client, Server serverReference,DataInputStream dis,DataOutputStream dos) {
 		this.serverReference = serverReference;
@@ -39,7 +40,7 @@ public class Connection implements Runnable {
 		String line;
 
 		running = true;
-		this.sendOverConnection("OK Welcome to the chat server, there are currelty " + serverReference.getNumberOfUsers() + " user(s) online");
+		this.sendOverConnection("OK Welcome to the chat server, there are currently " + serverReference.connectedNumberOfUsers() + " user(s) online");
 		while(running) {
 			try {
 				line = dis.readUTF();
@@ -102,7 +103,7 @@ public class Connection implements Runnable {
 	}
 	
 	private void stat() {
-		String status = "There are currently "+serverReference.getNumberOfUsers()+" user(s) on the server\n";
+		String status = "There are currently "+serverReference.connectedNumberOfUsers()+" user(s) on the server\n";
 		switch(state) {
 			case STATE_REGISTERED:
 				status += "You are logged im and have sent " + messageCount + " message(s)\n";
@@ -124,6 +125,7 @@ public class Connection implements Runnable {
 					userListString += s + "\n";
 				}
 				sendOverConnection(userListString);
+				//serverReference.broadcastMessage(userListString);
 				break;
 			
 			case STATE_UNREGISTERED:
@@ -148,8 +150,7 @@ public class Connection implements Runnable {
 					this.username = username;
 					state = STATE_REGISTERED;
 					sendOverConnection("OK Welcome to the chat server " + username);
-					serverReference.broadcastMessage("CONNNECTED "+ username);
-
+					serverReference.broadcastMessage("Update List");
 				}
 				break;
 		}	
@@ -201,9 +202,8 @@ public class Connection implements Runnable {
 	private void quit() {
 		switch(state) {
 			case STATE_REGISTERED:
-				sendOverConnection("OK thank you for sending " + messageCount + " message(s) with the chat service, goodbye. ");
-				serverReference.broadcastMessage("Number of online users: " + serverReference.getNumberOfUsers());
-				serverReference.broadcastMessage("DISCONNECTED "+ username);
+				//sendOverConnection("OK thank you for sending " + messageCount + " message(s) with the chat service, goodbye. ");
+				serverReference.broadcastMessage("Update List");
 				break;
 			case STATE_UNREGISTERED:
 				sendOverConnection("OK goodbye");
@@ -223,7 +223,6 @@ public class Connection implements Runnable {
 	}
 	
 	private synchronized void sendOverConnection (String message){
-		//System.out.println(message);
 		try {
 			dos.writeUTF(message);
 		} catch (IOException e) {
