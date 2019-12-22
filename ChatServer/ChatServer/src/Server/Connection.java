@@ -17,12 +17,8 @@ public class Connection implements Runnable {
 	private Socket client;
 	public static Server serverReference;
 	private String username;
-
-	//Scanner scn = new Scanner(System.in);
-	//private String name;
 	DataInputStream dis;
 	DataOutputStream dos;
-	boolean isloggedin;
 
 
 	
@@ -33,7 +29,6 @@ public class Connection implements Runnable {
 		messageCount = 0;
 		this.dis = dis;
 		this.dos = dos;
-		isloggedin = true;
 	}
 
 	public void run(){
@@ -86,10 +81,7 @@ public class Connection implements Runnable {
 				case "MESG":
 					mesg(message.substring(5));
 					break;
-				case "NUMB":
-					sendOverConnection(String.valueOf(serverReference.getNumberOfUsers()));
-					break;
-				
+
 				case "QUIT":
 					quit();
 					break;
@@ -125,7 +117,6 @@ public class Connection implements Runnable {
 					userListString += s + "\n";
 				}
 				sendOverConnection(userListString);
-				//serverReference.broadcastMessage(userListString);
 				break;
 			
 			case STATE_UNREGISTERED:
@@ -138,7 +129,7 @@ public class Connection implements Runnable {
 	private void iden(String message) {
 		switch(state) {
 			case STATE_REGISTERED:
-				sendOverConnection("BAD you are already registerd with username " + username);
+				sendOverConnection("BAD you are already registered with username " + username);
 				break;
 			
 			case STATE_UNREGISTERED:
@@ -203,7 +194,7 @@ public class Connection implements Runnable {
 	private void quit() {
 		switch(state) {
 			case STATE_REGISTERED:
-				//sendOverConnection("OK thank you for sending " + messageCount + " message(s) with the chat service, goodbye. ");
+				sendOverConnection("OK thank you for sending " + messageCount + " message(s) with the chat service, goodbye. ");
 				serverReference.broadcastMessage("Update List");
 				break;
 			case STATE_UNREGISTERED:
