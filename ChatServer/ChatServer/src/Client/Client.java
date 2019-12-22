@@ -1,16 +1,19 @@
 package Client;
 
-import java.io.*;
-import java.net.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Scanner;
 
 public class Client
 {
     private static DataOutputStream dos;
     private static DataInputStream dis;
-    final static int ServerPort = 8080;
+    final static int ServerPort = 9000;
     Socket s = null;
-
+    String finalMessage = "";
     public Client(int ServerPort)
     {
         Scanner scn = new Scanner(System.in);
@@ -27,17 +30,17 @@ public class Client
             dis = new DataInputStream(s.getInputStream());
             dos = new DataOutputStream(s.getOutputStream());
             if(dis != null){
-                readMessage();
                 sendMessage(scn);
+                readMessage();
             }
 
         } catch (Exception e) {
             System.err.println("wrong port");
-            //e.printStackTrace();
         }
 
 
     }
+
 
     public void sendMessage(Scanner scn){
         // sendMessage thread
@@ -45,8 +48,7 @@ public class Client
         {
             @Override
             public void run() {
-                while (true) {
-
+                while (scn.hasNext()) {
                     // read the message to deliver.
                     String msg = scn.nextLine();
                     try {
@@ -60,18 +62,17 @@ public class Client
         });
         sendMessage.start();
     }
-    public void readMessage(){
+    public String readMessage(){
         Thread readMessage = new Thread(new Runnable()
         {
             @Override
             public void run() {
-
                 while (true) {
                     try {
                         // read the message sent to this client
                         if(dis.available()>0 && dis!=null){
                             String msg = dis.readUTF();
-
+                            finalMessage = msg;
                             if(!msg.equals("Update List")){
                                 System.out.println(msg);
                             }
@@ -83,9 +84,7 @@ public class Client
                                 //break;
                             }
                         }
-
                     } catch (IOException e) {
-
                         //System.err.println(e);
                         e.printStackTrace();
                     }
@@ -93,12 +92,13 @@ public class Client
             }
         });
         readMessage.start();
+        return finalMessage;
     }
 
 
     public static void main(String args[])
     {
         Client client = new Client(ServerPort);
+
     }
 }
-
